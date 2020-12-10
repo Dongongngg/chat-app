@@ -4,11 +4,12 @@ import './styles/App.scss';
 import {
 	ApolloClient,
 	InMemoryCache,
-	useQuery,
+	useSubscription,
 	useMutation,
 	gql,
 	ApolloProvider,
 } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
 import {
 	Button,
 	InputGroup,
@@ -27,13 +28,26 @@ interface IMessage {
 	content: string;
 }
 
+type MessagesProps = {
+	crtUser: string;
+};
+
+//	sub
+const wsLink = new WebSocketLink({
+	uri: `ws://localhost:4000/`,
+	options: {
+		reconnect: true,
+	},
+});
+//	client
 const client = new ApolloClient({
+	link: wsLink,
 	uri: 'http://localhost:4000',
 	cache: new InMemoryCache(),
 });
 
 const GET_MESSAGES = gql`
-	query {
+	subscription {
 		messages {
 			id
 			user
@@ -48,13 +62,8 @@ const POST_MESSAGE = gql`
 	}
 `;
 
-type MessagesProps = {
-	crtUser: string;
-};
-
 const Messages = ({ crtUser }: MessagesProps): JSX.Element | null => {
-	const { data } = useQuery(GET_MESSAGES);
-	console.log(crtUser);
+	const { data } = useSubscription(GET_MESSAGES);
 
 	if (!data) {
 		return null;
@@ -69,7 +78,7 @@ const Messages = ({ crtUser }: MessagesProps): JSX.Element | null => {
 					: { alignSelf: 'start' }
 			}
 		>
-			<ToastHeader style={user === crtUser ? { display: 'none' } : { display: 'auto' }}>
+			<ToastHeader style={user === crtUser ? { display: 'none' } : { display: 'flex' }}>
 				{user}:
 			</ToastHeader>
 			<ToastBody>{content}</ToastBody>
@@ -84,7 +93,7 @@ const App: React.FC = () => {
 	});
 
 	const [postMessage] = useMutation(POST_MESSAGE);
-
+	//	handle send msg
 	const handleSend = () => {
 		if (input.content.length > 0 && input.user.length > 0) {
 			postMessage({ variables: input });
@@ -96,8 +105,8 @@ const App: React.FC = () => {
 		<main className="app">
 			<Container>
 				<Row className="rounded">
-					<Col className="msg-board my-2">
-						<Messages crtUser="James" />
+					<Col className="msg-board p-3">
+						<Messages crtUser={input.user || ''} />
 					</Col>
 				</Row>
 

@@ -11,7 +11,10 @@
 	min-height: 20rem;
 	display: flex;
 	flex-direction: column;
+	max-height: 80vh;
+	overflow: auto;
 }
+
 .input-sender {
 	margin-right: 1rem;
 	max-width: 20%;
@@ -20,6 +23,7 @@
 	height: calc(1.5em + 0.75rem + 2px);
 }
 .msg-bubble {
+	font-size: 1rem;
 	max-width: 60%;
 	line-height: 1.2;
 	width: fit-content;
@@ -28,5 +32,12 @@
 	.toast-header,
 	.toast-body {
 		border-radius: 0.5rem;
+	}
+}
+
+@media (min-width: 768px) {
+	.msg-bubble {
+		font-size: 1.5rem;
+		letter-spacing: 1px;
 	}
 }
